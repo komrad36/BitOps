@@ -42,7 +42,7 @@ public:
             m_block[i] = value;
     }
 
-    // Assign all bits to value.
+    // Assign value to all bits.
     void AssignAll(bool value)
     {
         Rep(value ? uint64_t(-1) : uint64_t(0));
