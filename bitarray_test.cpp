@@ -26,19 +26,19 @@ void TestPrintHelper(uint8_t x)
     std::cout << int(x);
 }
 
-#define ASSERT_BIN_OP(a, b, op) do { \
-    const auto& va = (a); \
-    const auto& vb = (b); \
-    if (!(va op vb)) \
-    { \
-        std::cerr << "FAIL: expected " << #a << " " << #op << " " << #b << " (evaluates to "; \
-        TestPrintHelper(va); \
-        std::cerr << " " << #op << " "; \
-        TestPrintHelper(vb); \
-        std::cerr << ")\n"; \
-        __debugbreak(); \
-    } \
-    } while (0)
+#define ASSERT_BIN_OP(a, b, op) do {                                                            \
+    const auto& va = (a);                                                                       \
+    const auto& vb = (b);                                                                       \
+    if (!(va op vb))                                                                            \
+    {                                                                                           \
+        std::cerr << "FAIL: expected " << #a << " " << #op << " " << #b << " (evaluates to ";   \
+        TestPrintHelper(va);                                                                    \
+        std::cerr << " " << #op << " ";                                                         \
+        TestPrintHelper(vb);                                                                    \
+        std::cerr << ")\n";                                                                     \
+        __debugbreak();                                                                         \
+    }                                                                                           \
+} while (0)
 
 #define ASSERT_EQ(a, b) ASSERT_BIN_OP(a, b, ==)
 #define ASSERT_NE(a, b) ASSERT_BIN_OP(a, b, !=)
@@ -87,8 +87,8 @@ static void CheckAllBlocksEqual(BitArray<n>& v, uint64_t x)
 template <class U, class V>
 static void SweepArraySizes(U populateFunc, V testFunc)
 {
-#define SWEEP_ARRAY_SIZE(i) \
-    { BitArray<i> v; populateFunc(v); SetExcessBits(v); testFunc(v); } \
+#define SWEEP_ARRAY_SIZE(i)                                                \
+    { BitArray<i> v; populateFunc(v); SetExcessBits(v); testFunc(v); }     \
     { BitArray<i> v; populateFunc(v); ClearExcessBits(v); testFunc(v); }
     SWEEP_ARRAY_SIZE(1);
     SWEEP_ARRAY_SIZE(2);
@@ -304,10 +304,10 @@ static void TestIterator()
 
 #define TestSmall(f)  \
 {                     \
-    f<uint8_t>();        \
-    f<uint16_t>();       \
-    f<uint32_t>();       \
-    f<uint64_t>();       \
+    f<uint8_t>();     \
+    f<uint16_t>();    \
+    f<uint32_t>();    \
+    f<uint64_t>();    \
 }
 
 void TestBitArray()
@@ -974,19 +974,19 @@ void TestBitArray()
     }
 
 #define TEST_UNARY_OP(op, inplaceOp, scalarOp)                                                                      \
-    SweepArraySizes([](auto& v) { v.Rep(0x357cab98bce42045ULL); },  \
-    [](auto& v)                                                                                            \
+    SweepArraySizes([](auto& v) { v.Rep(0x357cab98bce42045ULL); },                                                  \
+    [](auto& v)                                                                                                     \
     {                                                                                                               \
-        BitArray<v.kNumBits> r1 = op(v);                                                                         \
+        BitArray<v.kNumBits> r1 = op(v);                                                                            \
         BitArray<v.kNumBits> r2 = v;                                                                                \
-        inplaceOp(r2);                                                                                           \
+        inplaceOp(r2);                                                                                              \
                                                                                                                     \
         ASSERT_TRUE(r1 == r2);                                                                                      \
-        for (uint64_t i = 0; i < v.kNumBlocks; ++i)                                                                      \
+        for (uint64_t i = 0; i < v.kNumBlocks; ++i)                                                                 \
         {                                                                                                           \
-            uint64_t* pV = reinterpret_cast<uint64_t*>(&v);                                                                   \
-            uint64_t* pR = reinterpret_cast<uint64_t*>(&r1);                                                                  \
-            ASSERT_EQ(pR[i], scalarOp(pV[i]));                                                               \
+            uint64_t* pV = reinterpret_cast<uint64_t*>(&v);                                                         \
+            uint64_t* pR = reinterpret_cast<uint64_t*>(&r1);                                                        \
+            ASSERT_EQ(pR[i], scalarOp(pV[i]));                                                                      \
         }                                                                                                           \
     }                                                                                                               \
     );
@@ -1000,11 +1000,11 @@ void TestBitArray()
         inplaceOp(r2, b);                                                                                           \
                                                                                                                     \
         ASSERT_TRUE(r1 == r2);                                                                                      \
-        for (uint64_t i = 0; i < a.kNumBlocks; ++i)                                                                      \
+        for (uint64_t i = 0; i < a.kNumBlocks; ++i)                                                                 \
         {                                                                                                           \
-            uint64_t* pA = reinterpret_cast<uint64_t*>(&a);                                                                   \
-            uint64_t* pB = reinterpret_cast<uint64_t*>(&b);                                                                   \
-            uint64_t* pR = reinterpret_cast<uint64_t*>(&r1);                                                                  \
+            uint64_t* pA = reinterpret_cast<uint64_t*>(&a);                                                         \
+            uint64_t* pB = reinterpret_cast<uint64_t*>(&b);                                                         \
+            uint64_t* pR = reinterpret_cast<uint64_t*>(&r1);                                                        \
             ASSERT_EQ(pR[i], scalarOp(pA[i], pB[i]));                                                               \
         }                                                                                                           \
     }                                                                                                               \
@@ -1013,21 +1013,21 @@ void TestBitArray()
 #define TEST_TERNARY_OP(op, inplaceOp, scalarOp)                                                                    \
     SweepArraySizesTriplet(                                                                                         \
     [](auto& v) { v.Rep(0x357cab98bce42045ULL); },                                                                  \
-    [](auto& v) { v.Rep(0x6e751b283bbe6557); }, [](auto& v) { v.Rep(0x23909d5a478b7aef); },                          \
-    [](auto& a, auto& b, auto& c)                                                                                            \
+    [](auto& v) { v.Rep(0x6e751b283bbe6557); }, [](auto& v) { v.Rep(0x23909d5a478b7aef); },                         \
+    [](auto& a, auto& b, auto& c)                                                                                   \
     {                                                                                                               \
-        BitArray<a.kNumBits> r1 = op(a, b, c);                                                                         \
+        BitArray<a.kNumBits> r1 = op(a, b, c);                                                                      \
         BitArray<a.kNumBits> r2 = a;                                                                                \
-        inplaceOp(r2, b, c);                                                                                           \
+        inplaceOp(r2, b, c);                                                                                        \
                                                                                                                     \
         ASSERT_TRUE(r1 == r2);                                                                                      \
-        for (uint64_t i = 0; i < a.kNumBlocks; ++i)                                                                      \
+        for (uint64_t i = 0; i < a.kNumBlocks; ++i)                                                                 \
         {                                                                                                           \
-            uint64_t* pA = reinterpret_cast<uint64_t*>(&a);                                                                   \
-            uint64_t* pB = reinterpret_cast<uint64_t*>(&b);                                                                   \
-            uint64_t* pC = reinterpret_cast<uint64_t*>(&c);                                                                   \
-            uint64_t* pR = reinterpret_cast<uint64_t*>(&r1);                                                                  \
-            ASSERT_EQ(pR[i], scalarOp(pA[i], pB[i], pC[i]));                                                               \
+            uint64_t* pA = reinterpret_cast<uint64_t*>(&a);                                                         \
+            uint64_t* pB = reinterpret_cast<uint64_t*>(&b);                                                         \
+            uint64_t* pC = reinterpret_cast<uint64_t*>(&c);                                                         \
+            uint64_t* pR = reinterpret_cast<uint64_t*>(&r1);                                                        \
+            ASSERT_EQ(pR[i], scalarOp(pA[i], pB[i], pC[i]));                                                        \
         }                                                                                                           \
     }                                                                                                               \
     );

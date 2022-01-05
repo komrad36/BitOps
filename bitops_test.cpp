@@ -26,19 +26,19 @@ void TestPrintHelper(uint8_t x)
     std::cout << int(x);
 }
 
-#define ASSERT_BIN_OP(a, b, op) do { \
-    const auto& va = (a); \
-    const auto& vb = (b); \
-    if (!(va op vb)) \
-    { \
-        std::cerr << "FAIL: expected " << #a << " " << #op << " " << #b << " (evaluates to "; \
-        TestPrintHelper(va); \
-        std::cerr << " " << #op << " "; \
-        TestPrintHelper(vb); \
-        std::cerr << ")\n"; \
-        __debugbreak(); \
-    } \
-    } while (0)
+#define ASSERT_BIN_OP(a, b, op) do {                                                            \
+    const auto& va = (a);                                                                       \
+    const auto& vb = (b);                                                                       \
+    if (!(va op vb))                                                                            \
+    {                                                                                           \
+        std::cerr << "FAIL: expected " << #a << " " << #op << " " << #b << " (evaluates to ";   \
+        TestPrintHelper(va);                                                                    \
+        std::cerr << " " << #op << " ";                                                         \
+        TestPrintHelper(vb);                                                                    \
+        std::cerr << ")\n";                                                                     \
+        __debugbreak();                                                                         \
+    }                                                                                           \
+} while (0)
 
 #define ASSERT_EQ(a, b) ASSERT_BIN_OP(a, b, ==)
 #define ASSERT_NE(a, b) ASSERT_BIN_OP(a, b, !=)
