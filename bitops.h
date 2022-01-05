@@ -15,6 +15,7 @@
 #if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
 #pragma warning (push)
 #pragma warning (disable:4146)
+#include <intrin.h>
 #endif
 
 // If cond, set bit i in x.
@@ -480,8 +481,8 @@
 // Reverse bit order within each byte, while leaving byte order unmofidied.
 [[nodiscard]] static inline __m128i ReverseBitsInBytes_M128(__m128i v)
 {
-	const __m128i hMask = _mm_set_epi64x(0x0F070B030D050901LL, 0x0E060A020C040800LL);
-	const __m128i lMask = _mm_set_epi64x(0xF070B030D0509010LL, 0xE060A020C0408000LL);
+	const __m128i hMask = _mm_set_epi64x(int64_t(0x0F070B030D050901ULL), int64_t(0x0E060A020C040800ULL));
+	const __m128i lMask = _mm_set_epi64x(int64_t(0xF070B030D0509010ULL), int64_t(0xE060A020C0408000ULL));
 	const __m128i L = _mm_and_si128(v, _mm_set1_epi8(0xF));
 	const __m128i H = _mm_and_si128(_mm_srli_epi32(v, 4), _mm_set1_epi8(0xF));
 	return _mm_or_si128(_mm_shuffle_epi8(lMask, L), _mm_shuffle_epi8(hMask, H));
