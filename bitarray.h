@@ -1193,7 +1193,7 @@ class SmallBitArray
     template <>
     struct TypeEnforcer<uint64_t> : TypeEnforcerValidType {};
 
-    static_assert(TypeEnforcer<T>::kValid, "Only uint8_t, uint16_t, uint32_t, uint64_t specializations permitted.");
+    static_assert(TypeEnforcer<T>::kValid, "Only uint[8|16|32|64]_t specializations permitted.");
 
 public:
     static constexpr uint64_t kNumBits = 8 * sizeof(T);
