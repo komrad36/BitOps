@@ -50,7 +50,7 @@ void TestPrintHelper(uint8_t x)
 template <size_t n>
 static void SetExcessBits(BitArray<n>& v)
 {
-    if (n & 63ULL)
+    if constexpr ((n & 63ULL) != 0ULL)
     {
         uint64_t* p = reinterpret_cast<uint64_t*>(&v);
         p[BitArray<n>::kNumBlocks - 1] |= ~BitArray<n>::LastBlockMask();
@@ -60,7 +60,7 @@ static void SetExcessBits(BitArray<n>& v)
 template <size_t n>
 static void ClearExcessBits(BitArray<n>& v)
 {
-    if (n & 63ULL)
+    if constexpr ((n & 63ULL) != 0ULL)
     {
         uint64_t* p = reinterpret_cast<uint64_t*>(&v);
         p[BitArray<n>::kNumBlocks - 1] &= BitArray<n>::LastBlockMask();

@@ -9,7 +9,9 @@
 
 #pragma once
 
+#ifndef BITARRAY_SKIP_INCLUDES
 #include "bitops.h"
+#endif
 
 #define ENABLE_ASSERTS
 
@@ -889,7 +891,7 @@ public:
         if (s == 0)
             return;
 
-        if (kNumBlocks == 1)
+        if constexpr (kNumBlocks == 1)
         {
             m_block[0] = (m_block[0] & LastBlockMask()) >> s;
         }
@@ -930,7 +932,7 @@ public:
             return other;
 
         BitArray<kNumBits> ret;
-        if (kNumBlocks == 1)
+        if constexpr (kNumBlocks == 1)
         {
             ret.m_block[0] = (other.m_block[0] & LastBlockMask()) >> s;
         }
@@ -957,18 +959,20 @@ public:
     public:
         Iterator(const uint64_t* __restrict v) : m_v(v)
         {
-            for (m_iBlock = 0; m_iBlock < kNumBlocks - 1; ++m_iBlock)
+            for (m_iBlock = 0; m_iBlock < kNumBlocks; ++m_iBlock)
             {
                 m_block = m_v[m_iBlock];
                 if (m_block)
                 {
                     m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
+                    if constexpr ((kNumBits & 63ULL) != 0ULL)
+                    {
+                        if (m_iBit >= kNumBits)
+                            ++m_iBlock;
+                    }
                     return;
                 }
             }
-
-            m_block = m_v[kNumBlocks - 1];
-            m_iBit = ((kNumBlocks - 1) << 6ULL) + FirstSetBitIndex_U64(m_block);
         }
 
         uint64_t operator*() const
@@ -984,14 +988,16 @@ public:
                 if (m_block)
                 {
                     m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
+                    if constexpr ((kNumBits & 63ULL) != 0ULL)
+                    {
+                        if (m_iBit >= kNumBits)
+                            ++m_iBlock;
+                    }
                     return *this;
                 }
 
                 if (++m_iBlock >= kNumBlocks)
-                {
-                    m_iBit = ~0ULL;
                     return *this;
-                }
 
                 m_block = m_v[m_iBlock];
             }
@@ -1009,12 +1015,12 @@ public:
 
         bool operator==(const EndIterator&) const
         {
-            return m_iBit >= kNumBits;
+            return m_iBlock >= kNumBlocks;
         }
 
         bool operator!=(const EndIterator&) const
         {
-            return m_iBit < kNumBits;
+            return m_iBlock < kNumBlocks;
         }
 
     private:
@@ -1269,7 +1275,7 @@ public:
 
         uint64_t operator*() const
         {
-            return m_iBit;
+            return FirstSetBitIndex_U64(m_block);
         }
 
         Iterator& operator++()
@@ -1291,12 +1297,12 @@ public:
 
         bool operator==(const EndIterator&) const
         {
-            return m_iBit == 8 * sizeof(T);
+            return !m_block;
         }
 
         bool operator!=(const EndIterator&) const
         {
-            return m_iBit != 8 * sizeof(T);
+            return m_block;
         }
 
     private:
