@@ -965,11 +965,8 @@ public:
                 if (m_block)
                 {
                     m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
-                    if constexpr ((kNumBits & 63ULL) != 0ULL)
-                    {
-                        if (m_iBit >= kNumBits)
-                            ++m_iBlock;
-                    }
+                    if (m_iBit >= kNumBits)
+                        ++m_iBlock;
                     return;
                 }
             }
@@ -988,11 +985,8 @@ public:
                 if (m_block)
                 {
                     m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
-                    if constexpr ((kNumBits & 63ULL) != 0ULL)
-                    {
-                        if (m_iBit >= kNumBits)
-                            ++m_iBlock;
-                    }
+                    if (m_iBit >= kNumBits)
+                         ++m_iBlock;
                     return *this;
                 }
 
