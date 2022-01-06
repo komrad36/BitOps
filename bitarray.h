@@ -13,7 +13,7 @@
 #include "bitops.h"
 #endif
 
-#define ENABLE_ASSERTS
+//#define ENABLE_ASSERTS
 
 #if !defined(__clang__) && !defined(__GNUC__) && defined(_MSC_VER)
 #pragma warning( push )
