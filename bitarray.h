@@ -31,12 +31,8 @@
 #endif
 
 #if defined(__clang__) || defined(__GNUC__)
-#define LIKELY(x) __builtin_expect((x), 1)
-#define UNLIKELY(x) __builtin_expect((x), 0)
 #define ALWAYS_INLINE __attribute__((always_inline))
 #else
-#define LIKELY(x) (x)
-#define UNLIKELY(x) (x)
 #define ALWAYS_INLINE __forceinline
 #endif
 
@@ -967,7 +963,7 @@ public:
     class Iterator
     {
     public:
-        Iterator(const uint64_t* __restrict v) : m_v(v)
+        ALWAYS_INLINE Iterator(const uint64_t* __restrict v) : m_v(v)
         {
             for (m_iBlock = 0; m_iBlock < kNumBlocks - 1; ++m_iBlock)
             {
@@ -989,7 +985,7 @@ public:
             ++m_iBlock;
         }
 
-        uint64_t operator*() const
+        ALWAYS_INLINE uint64_t operator*() const
         {
             if constexpr (kNumBlocks == 1)
                 return FirstSetBitIndex_U64(m_block);
@@ -997,7 +993,7 @@ public:
                 return m_iBit;
         }
 
-        Iterator& operator++()
+        ALWAYS_INLINE Iterator& operator++()
         {
             m_block = ClearFirstSetBit_U64(m_block);
 
@@ -1017,22 +1013,22 @@ public:
             };
         }
 
-        bool operator==(const Iterator& other) const
+        ALWAYS_INLINE bool operator==(const Iterator& other) const
         {
             return m_iBit == other.m_iBit;
         }
 
-        bool operator!=(const Iterator& other) const
+        ALWAYS_INLINE bool operator!=(const Iterator& other) const
         {
             return !(*this == other);
         }
 
-        bool operator==(const EndIterator&) const
+        ALWAYS_INLINE bool operator==(const EndIterator&) const
         {
             return m_iBlock >= kNumBlocks;
         }
 
-        bool operator!=(const EndIterator&) const
+        ALWAYS_INLINE bool operator!=(const EndIterator&) const
         {
             return m_iBlock < kNumBlocks;
         }
@@ -1044,12 +1040,12 @@ public:
         uint64_t m_iBit;
     };
 
-    Iterator begin() const
+    ALWAYS_INLINE Iterator begin() const
     {
         return m_block;
     }
 
-    EndIterator end() const
+    ALWAYS_INLINE EndIterator end() const
     {
         return {};
     }
