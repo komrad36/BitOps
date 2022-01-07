@@ -30,6 +30,16 @@
 #define ASSERT(a) do {} while (0)
 #endif
 
+#if defined(__clang__) || defined(__GNUC__)
+#define LIKELY(x) __builtin_expect((x), 1)
+#define UNLIKELY(x) __builtin_expect((x), 0)
+#define ALWAYS_INLINE __attribute__((always_inline))
+#else
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
+#define ALWAYS_INLINE __forceinline
+#endif
+
 template <uint64_t kNBits>
 class BitArray
 {
@@ -959,34 +969,43 @@ public:
     public:
         Iterator(const uint64_t* __restrict v) : m_v(v)
         {
-            for (m_iBlock = 0; m_iBlock < kNumBlocks; ++m_iBlock)
+            for (m_iBlock = 0; m_iBlock < kNumBlocks - 1; ++m_iBlock)
             {
                 m_block = m_v[m_iBlock];
                 if (m_block)
                 {
                     m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
-                    if (m_iBit >= kNumBits)
-                        ++m_iBlock;
                     return;
                 }
             }
+
+            m_block = m_v[kNumBlocks - 1] & LastBlockMask();
+            if (m_block)
+            {
+                m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
+                return;
+            }
+
+            ++m_iBlock;
         }
 
         uint64_t operator*() const
         {
-            return m_iBit;
+            if constexpr (kNumBlocks == 1)
+                return FirstSetBitIndex_U64(m_block);
+            else
+                return m_iBit;
         }
 
         Iterator& operator++()
         {
             m_block = ClearFirstSetBit_U64(m_block);
+
             for (;;)
             {
                 if (m_block)
                 {
                     m_iBit = (m_iBlock << 6ULL) + FirstSetBitIndex_U64(m_block);
-                    if (m_iBit >= kNumBits)
-                         ++m_iBlock;
                     return *this;
                 }
 
@@ -994,7 +1013,8 @@ public:
                     return *this;
 
                 m_block = m_v[m_iBlock];
-            }
+                m_block = m_iBlock == kNumBlocks - 1 ? m_block & LastBlockMask() : m_block;
+            };
         }
 
         bool operator==(const Iterator& other) const
