@@ -274,12 +274,12 @@ public:
     uint64_t CountLeadingZeros() const
     {
         if (const uint64_t block = m_block[kNumBlocks - 1] & LastBlockMask())
-            return (kNumBits - 1) - (((kNumBlocks - 1) << 6ULL) + LastSetBitIndex_U64(block));
+            return (kNumBits - 1) - 63ULL - ((kNumBlocks - 1) << 6ULL) + CountLeadingZeros_U64(block);
 
         for (uint64_t i = kNumBlocks - 2; int64_t(i) >= 0; --i)
         {
             if (const uint64_t block = m_block[i])
-                return (kNumBits - 1) - ((i << 6ULL) + LastSetBitIndex_U64(block));
+                return (kNumBits - 1) - 63ULL - (i << 6ULL) + CountLeadingZeros_U64(block);
         }
 
         return kNumBits;
