@@ -4,7 +4,7 @@
 *    kareem.h.omar@gmail.com
 *    https://github.com/komrad36
 *
-*    Last updated Sept 20, 2021
+*    Last updated Dec 11, 2025
 *******************************************************************/
 
 #pragma once
@@ -1139,7 +1139,7 @@ private:
         if (blockEndRun < 64ULL)
             iStart = iCandidateStart;
 
-        return false;
+        return blockEndRun >= n;
     }
 
     static bool FirstHighAlignedBlockOfNBitsHelper(uint64_t& iStart, uint64_t alignMask, uint64_t n, uint64_t iBlock, uint64_t block)
@@ -1177,7 +1177,7 @@ private:
         if (alignedBlockEndRun < 64ULL)
             iStart = iCandidateStart;
 
-        return false;
+        return alignedBlockEndRun >= n;
     }
 
     uint64_t m_block[kNumBlocks];

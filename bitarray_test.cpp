@@ -4,7 +4,7 @@
 *    kareem.h.omar@gmail.com
 *    https://github.com/komrad36
 *
-*    Last updated Sept 20, 2021
+*    Last updated Dec 11, 2025
 *******************************************************************/
 
 #include <iostream>
@@ -935,42 +935,61 @@ void TestBitArray()
                     v.SetBitsInRange(i, iEnd < v.kNumBits ? iEnd : v.kNumBits - 1);
                     i += n + 1;
                 }
+                auto inv = ~v;
                 for (uint64_t n = 1; n < kMaxN; ++n)
                 {
                     ASSERT_EQ(RefFirstBlockOfNSetBits(v, n), v.FirstBlockOfNSetBits(n));
-                    for (uint64_t align = 1; align <= 256; align *= 2)
-                        ASSERT_EQ(RefFirstAlignedBlockOfNSetBits(v, n, align), v.FirstAlignedBlockOfNSetBits(n, align));
-                }
-            }
-        }
-
-        // FirstBlockOfNClearBits, FirstAlignedBlockOfNClearBits
-        for (const bool setExcessBits : {true, false})
-        {
-            for (uint64_t iStart = 0; iStart < 256; ++iStart)
-            {
-                v.SetAll();
-                AssignExcessBits(v, setExcessBits);
-                constexpr uint64_t kMaxN = 192;
-                uint64_t i = iStart;
-                for (uint64_t n = 1; n < kMaxN; ++n)
-                {
-                    const uint64_t iEnd = i + n - 1;
-                    v.ClearBitsInRange(i, iEnd < v.kNumBits ? iEnd : v.kNumBits - 1);
-                    i += n + 1;
-                }
-                for (uint64_t n = 1; n < kMaxN; ++n)
-                {
+                    ASSERT_EQ(RefFirstBlockOfNSetBits(inv, n), inv.FirstBlockOfNSetBits(n));
                     ASSERT_EQ(RefFirstBlockOfNClearBits(v, n), v.FirstBlockOfNClearBits(n));
+                    ASSERT_EQ(RefFirstBlockOfNClearBits(inv, n), inv.FirstBlockOfNClearBits(n));
                     for (uint64_t align = 1; align <= 256; align *= 2)
                     {
-                        const uint64_t ref = RefFirstAlignedBlockOfNClearBits(v, n, align);
-                        const uint64_t test = v.FirstAlignedBlockOfNClearBits(n, align);
-                        ASSERT_EQ(ref, test);
+                        ASSERT_EQ(RefFirstAlignedBlockOfNSetBits(v, n, align), v.FirstAlignedBlockOfNSetBits(n, align));
+                        ASSERT_EQ(RefFirstAlignedBlockOfNSetBits(inv, n, align), inv.FirstAlignedBlockOfNSetBits(n, align));
+                        ASSERT_EQ(RefFirstAlignedBlockOfNClearBits(v, n, align), v.FirstAlignedBlockOfNClearBits(n, align));
+                        ASSERT_EQ(RefFirstAlignedBlockOfNClearBits(inv, n, align), inv.FirstAlignedBlockOfNClearBits(n, align));
                     }
                 }
             }
         }
+
+        SweepArraySizes([&RefFirstBlockOfNSetBits, &RefFirstBlockOfNClearBits, &RefFirstAlignedBlockOfNSetBits, &RefFirstAlignedBlockOfNClearBits](auto& v) {
+            static constexpr uint64_t kBlocks[] = {0, 1, 2, 1ULL << 62, 1ULL << 63, 1 | 1ULL << 62, 2 | 1ULL << 62, 1 | 1ULL << 63, 2 | 1ULL << 63, ~0ULL};
+            for (const bool setExcessBits : {true, false})
+            {
+                v.ClearAll();
+                for (const uint64_t block0 : kBlocks)
+                {
+                    reinterpret_cast<uint64_t*>(&v)[0] = block0;
+                    for (const uint64_t block1 : kBlocks)
+                    {
+                        if (v.kNumBlocks > 1)
+                            reinterpret_cast<uint64_t*>(&v)[1] = block1;
+                        for (const uint64_t block2 : kBlocks)
+                        {
+                            if (v.kNumBlocks > 2)
+                                reinterpret_cast<uint64_t*>(&v)[2] = block2;
+                            for (const uint64_t block3 : kBlocks)
+                            {
+                                if (v.kNumBlocks > 3)
+                                    reinterpret_cast<uint64_t*>(&v)[3] = block3;
+                                AssignExcessBits(v, setExcessBits);
+                                for (uint64_t n = 1; n < v.kNumBits + 64; ++n)
+                                {
+                                    ASSERT_EQ(RefFirstBlockOfNSetBits(v, n), v.FirstBlockOfNSetBits(n));
+                                    ASSERT_EQ(RefFirstBlockOfNClearBits(v, n), v.FirstBlockOfNClearBits(n));
+                                    for (uint64_t align = 1; align <= 256; align *= 2)
+                                    {
+                                        ASSERT_EQ(RefFirstAlignedBlockOfNSetBits(v, n, align), v.FirstAlignedBlockOfNSetBits(n, align));
+                                        ASSERT_EQ(RefFirstAlignedBlockOfNClearBits(v, n, align), v.FirstAlignedBlockOfNClearBits(n, align));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
 #define TEST_UNARY_OP(op, inplaceOp, scalarOp)                                                                      \
